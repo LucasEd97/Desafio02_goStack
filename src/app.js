@@ -16,9 +16,15 @@ app.get("/repositories", (request, response) => {
 });
 
 app.post("/repositories", (request, response) => {
-  const { title, url, techs, likes } = request.body;
+  const { title, url, techs } = request.body;
 
-  const repository = { id: uuid(), title, url, techs, likes }
+  const repository = { 
+    id: uuid(), 
+    title, 
+    url, 
+    techs,
+    likes: 0 
+  }
 
   repositories.push(repository);
 
@@ -28,16 +34,20 @@ app.post("/repositories", (request, response) => {
 
 app.put("/repositories/:id", (request, response) => {
   const { id } = request.params;
-  const { title, url, techs, likes } = request.body;
+  const { title, url, techs } = request.body;
 
   const repositoryIndex = repositories.findIndex(repository => repository.id === id);
+
+  if (repositoryIndex < 0) {
+    return response.status(400).json({ error: 'Repository does not exist'})
+  }
 
   const repository = {
     id,
     title,
     url,
     techs,
-    likes
+    likes: repositories[repositoryIndex].likes,
   };
 
   repositories[repositoryIndex] = repository;
@@ -51,7 +61,7 @@ app.delete("/repositories/:id", (request, response) => {
   const repositoryIndex = repositories.findIndex(repository => repository.id === id);
 
   if (repositoryIndex < 0) {
-    return response.status(400).json({ error: 'Project not Found'})
+    return response.status(400).json({ error: 'Repository does not exist'})
   }
 
   repositories.splice(repositoryIndex, 1);
@@ -60,7 +70,19 @@ app.delete("/repositories/:id", (request, response) => {
 });
 
 app.post("/repositories/:id/like", (request, response) => {
-  // TODO
+  const { id } = request.params;
+  
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id);
+
+  if (repositoryIndex < 0) {
+    return response.status(400).json({ error: 'Repository does not exist'})
+  }
+
+  repositories[repositoryIndex].likes++;
+
+  return response.json(repositories[repositoryIndex]);
+  // repositories[repositoryIndex] = repository;
+
 });
 
 module.exports = app;
